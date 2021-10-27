@@ -33,11 +33,17 @@ __Input__: embeddings and logits of the test samples, precomputed Weibull models
 For more details please see the [paper](https://vast.uccs.edu/~abendale/papers/0348.pdf).
 
 #### How to select a threshold
-Treshold value may be selected so that a certain percent (99%, for example) of the train set is classified as "known".
+Threshold value may be selected so that a certain percent (99%, for example) of the train set is classified as "known".
+
 #### Note
 I believe it is not stated clearly in the paper, but you can use embeddings from any other layer than from the penultimate one
 to fit the Weibull models. For example, the layer before the penultimate layer is a good choice for this, as embeddings in
 this layer are trained to be linearly separable and it sort of makes sense.
+
+#### On the usage of LibMR
+In my experiments I have found ot that the results of fitting with [LibMR](https://github.com/Vastlab/libMR) differ from
+ the results obtained with [this](https://github.com/ashafaei/OD-test/blob/8252aace84e2ae1ab95067876985f62a1060aad6/methods/openmax.py#L37)
+implementation. Based on my own judgement I decided to use the latter (cdf of LibMR fitting looked less plausible for me).
 
 ### Usage
 See `example.ipynb` for an example of use. Replace the toy data with the outputs of your model and here you go.
