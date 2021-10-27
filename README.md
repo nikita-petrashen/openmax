@@ -6,15 +6,23 @@ Differences from other implementations I have found out there:
 2. This repo is documented.
 3. This implementation is optimized (vectorized where it was possible).
 
+### What's it for?
+* OpenMax is a method for Open Set Classification (you have __K__ known classes and a set of classes the model hasn't seen during training which you have to classify as "unknown").
+* OpenMax is applied only during __inference__ and on top of a network which was trained with SoftMax, for example.
+* Its principle is based on the [Extreme Value Theory](https://en.wikipedia.org/wiki/Extreme_value_theory).
+* The main idea is to build a probability model which would estimate how probable is that the sample belongs to one of the known classes
+based on the distance from the sample's embedding to the class centroids which are estimated from the train data.
+Based on this probability model OpenMax recalibrates the test samples' logits, also adding __K+1-th__ score which accounts for the "unknown" class.
+
 ### How OpenMax works
-#### Phase 1: Weibull Fitting
+#### Phase 1: Weibull Fitting on the train data
 __Input__: embeddings of __correctly__ classified samples for each class.
 1. Compute centroids for each class
 2. For each sample, compute the distance between its embedding and the respective centroid
 3. Take __k__ farthest samples for each class
 4. For each class, fit a Weibull distribution on these __k__ largest distances
 
-#### Phase 2: Logits recalibration
+#### Phase 2: Logits recalibration for the test data
 __Input__: embeddings and logits of the test samples, precomputed Weibull models and class centroids.
 1. Compute the distance between each sample and __each__ class centroid
 2. Take __alpha__ closest centroids for each sample
@@ -22,9 +30,10 @@ __Input__: embeddings and logits of the test samples, precomputed Weibull models
 4. Compute probabilities as a SoftMax over the recalibrated logits
 5. Classify a sample as "unknown" either if the respective probability is the largest or all of the probabilities fall below a threshold 
 
-#### How to select a threshold
-Treshold value may be selected so that a certain percent (99%, for example) is classified as "known"
+For more details please see the [paper](https://vast.uccs.edu/~abendale/papers/0348.pdf).
 
+#### How to select a threshold
+Treshold value may be selected so that a certain percent (99%, for example) of the train set is classified as "known".
 #### Note
 I believe it is not stated clearly in the paper, but you can use embeddings from any other layer than from the penultimate one
 to fit the Weibull models. For example, the layer before the penultimate layer is a good choice for this, as embeddings in
